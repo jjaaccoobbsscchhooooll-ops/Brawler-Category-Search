@@ -163,7 +163,7 @@
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
   /* brawler portrait mode */
   .row.port{padding-left:calc(var(--ic) + 18px)}
-  .row img.portrait{position:absolute;left:6px;top:50%;transform:translateY(-50%);height:var(--ic);width:var(--ic);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-select:none}
+  .row canvas.portrait{position:absolute;left:6px;top:50%;transform:translateY(-50%);height:var(--ic);width:var(--ic);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-select:none}
   .row.port img.medal{left:-8px}
   /* fonts that only have one weight */
   body[data-font=pixel] *,body[data-font=brawl] *,body[data-font=impact] *{font-weight:400!important}
@@ -437,8 +437,8 @@ cycle.forEach((n, i) => {
 
 // Counter loop graph: bold arrows = direct counters, dotted arrows = light counters, dotted lines = NO ADV (flat)
 const loopDirect = cycle.map((_, i) => [i, (i + 1) % cycle.length]);   // each counters the next
-const loopLight  = [[0, 3], [4, 1]];            // Kill Confirm > Sustain, Push > Area Control (light)
-const loopFlat   = [[0, 2], [1, 3], [2, 4]];    // KC / Enhance, Area Control / Sustain, Enhance / Push
+const loopLight  = [[0, 3], [4, 1], [2, 0]];    // Kill Confirm > Sustain, Push > Area Control, Enhance > Kill Confirm (light)
+const loopFlat   = [[1, 3], [2, 4]];            // Area Control / Sustain, Enhance / Push
 function buildLoop() {
   const cx = 230, cy = 150, rx = 160, ry = 125, hw = 62, hh = 18, gap = 6;
   const pts = cycle.map((n, i) => {
@@ -718,8 +718,10 @@ function render() {
     };
     d.dataset.name = b.n;
     if (portrait && PORTRAITS[b.n]) {
-      const p = document.createElement("img");
-      p.className = "portrait"; p.src = PORTRAITS[b.n]; p.alt = ""; p.draggable = false;
+      // canvas, not <img>: browser force-dark modes invert light/gray <img>s (Gray's portrait) but leave canvas alone
+      const p = document.createElement("canvas");
+      p.className = "portrait"; p.width = p.height = 76; p.setAttribute("aria-hidden", "true");
+      drawPortrait(p, b.n);
       d.classList.add("port");
       d.append(p);
     }
@@ -752,6 +754,14 @@ function render() {
 
 // Fun mode: click bursts, hover wiggles, scroll reveals + tilt + progress bar
 const funChk = document.getElementById("funChk"), scrollbar = document.getElementById("scrollbar");
+const portImgs = {};
+function drawPortrait(cv, name) {
+  let im = portImgs[name];
+  if (!im) { im = portImgs[name] = new Image(); im.src = PORTRAITS[name]; }
+  const go = () => { const c = cv.getContext("2d"), r = Math.min(76 / im.naturalWidth, 76 / im.naturalHeight);
+    const w = im.naturalWidth * r, h = im.naturalHeight * r; c.clearRect(0, 0, 76, 76); c.drawImage(im, (76 - w) / 2, (76 - h) / 2, w, h); };
+  if (im.complete && im.naturalWidth) go(); else im.addEventListener("load", go, {once: true});
+}
 let portrait = false;
 const portChk = document.getElementById("portChk");
 function applyPortrait(on) {
