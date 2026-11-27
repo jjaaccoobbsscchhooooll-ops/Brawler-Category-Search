@@ -4,7 +4,7 @@
   <img src="assets/magnifying-glass-icon.png" alt="Magnifying glass icon" width="128">
 </p>
 
-> **About this project:** [Replace this text with a short description of Brawler Category Search, what the site does, and its main features.]
+> **About this project:** [Brawler category search is a website designed for your ranked drafting needs. It divides every brawler into a category, tells you where to play them, and other miscellaneous helpful info. I hope you find it useful!]
 
 ## Screenshot
 
